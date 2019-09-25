@@ -4,6 +4,10 @@ import hudson.model.*
 def BuildVersion
 def Current_version
 def NextVersion
+def dev_rep_docker = 'devopsint/dev'
+def colons = ':'
+def module = 'intweb'
+def underscore = '_'
 pipeline {
 
     options {
@@ -48,7 +52,7 @@ pipeline {
                     dir('INT_WEB') {
                         try {
 
-                            docker.build("int_web:$BuildVersion")
+                            docker.build("$module$colons$BuildVersion")
                             println("The build image is successfully")
 
                         }
@@ -71,8 +75,8 @@ pipeline {
                     try{
                         withCredentials([usernamePassword(credentialsId: 'docker-cred-id', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
                             sh "docker login -u=${DOCKER_USERNAME} -p=${DOCKER_PASSWORD}"
-                            sh "docker tag int_web:$BuildVersion devopsint/dev:int_web_$BuildVersion"
-                            sh "docker push devopsint/dev:int_web_$BuildVersion"
+                            sh "docker tag $module$colons$BuildVersion $dev_rep_docker$colons$module$underscore$BuildVersion"
+                            sh "docker push $dev_rep_docker$colons$module$underscore$BuildVersion"
 
                         }
                     }
@@ -89,7 +93,7 @@ pipeline {
             steps{
                 script{
                     node('master'){
-                        build job: 'E2E-CI', parameters: [ string(name: 'triggered_by', value: 'intweb'), string(name:'next_version', value: NextVersion), string(name: 'Image_version', value: 'int_web_' + BuildVersion)]
+                        build job: 'E2E-CI', parameters: [ string(name: 'triggered_by', value: module), string(name:'next_version', value: NextVersion), string(name: 'Image_version', value: dev_rep_docker + colons + module + underscore + BuildVersion)]
 
                     }
 

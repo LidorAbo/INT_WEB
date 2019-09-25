@@ -6,8 +6,6 @@ app = Flask(__name__)
 file = open(".env")
 port = file.readline().split("=")[1]
 ip = file.readline().split("=")[1]
-
-
 @app.route('/')
 def student():
     return render_template('student.html')
